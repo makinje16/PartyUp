@@ -44,7 +44,6 @@ pub fn main() {
 
     client.with_framework(StandardFramework::new()
         .configure(|c| c.prefix("!")) // set the bot's prefix to "~"
-        .cmd("ping", ping)
         .cmd("commands", commands)
         .cmd("lfg", lfg));
 
@@ -53,10 +52,6 @@ pub fn main() {
         println!("An error occurred while running the client: {:?}", why);
     }
 }
-
-command!(ping(_context, message) {
-    let _ = message.reply("Pong!");
-});
 
 command!(commands(_ctx, message, _args) {
     let mut response = String::from("\n!lfg lol\n!lfg dota2\n!lfg wow");
