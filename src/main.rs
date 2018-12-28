@@ -67,5 +67,4 @@ command!(lfg(_ctx, message, _args) {
         Some(Game::Wow)  => message.reply("You are looking for a WoW game"),
         None             => message.reply("Sorry we don't have functionality for that game yet"),
     };
-    // let _ = message.reply(&response);
 });
