@@ -58,7 +58,6 @@ fn build_endpoint(client: &Client, base: &str, end: &String) -> Box<String> {
     endpoint.push_str("?api_key=");
     endpoint.push_str(client.api_key.as_ref());
     Box::new(endpoint)
-    
 }
 
 impl Client {
@@ -68,14 +67,12 @@ impl Client {
                                         &summoner_name);
         let endpoint_ref: &str = endpoint.as_ref();
         let response = reqwest::get(endpoint_ref).unwrap().text().unwrap();
-        println!("response: {:?}", response);
         let summoner_info: SummonerInfo = serde_json::from_str(&response).unwrap();
 
         let ranked_endpoint = build_endpoint(&self, RANKED_INFO_BY_SUMMONER_ID_ENDPOINT,
                                      &summoner_info.id);
         let ranked_endpoint_ref: &str = ranked_endpoint.as_ref();
         let response = reqwest::get(ranked_endpoint_ref).unwrap().text().unwrap();
-        println!("response: {:?}", response);
         let ranked_info: Vec<RankedQueue> = serde_json::from_str(&response).unwrap();
         ranked_info
     }

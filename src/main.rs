@@ -95,24 +95,12 @@ command!(lfg(_ctx, message, _args) {
     }
 
     let reply_msg = construct_lfg_reply(summoner_name, &ranked_info[index], &message, game);
-    message.reply(&(*reply_msg))?;
+    message.reply(&reply_msg)?;
 });
 
-fn construct_lfg_reply(summoner_name: String, ranked_info: &league_api::RankedQueue, msg: &Message, game: Game) -> Box<String> {
-    let mut reply = String::from("```This is the info being added to the database:\n");
-    reply.push_str("Summoner-Name : ");
-    reply.push_str(&summoner_name);
-    reply.push_str("\n");
-    reply.push_str("Discord-Name : ");
-    reply.push_str(&msg.author.name);
-    reply.push_str("\n");
-    reply.push_str("Game: ");
-    reply.push_str(game.to_string());
-    reply.push_str("\n");
-    reply.push_str("Rank: ");
-    reply.push_str(&ranked_info.tier);
-    reply.push_str("\n```");
-    Box::new(reply)
+fn construct_lfg_reply(summoner_name: String, ranked_info: &league_api::RankedQueue, msg: &Message, game: Game) -> String {
+    format!("```This is the info being added to the database:\n\tSummoner-Name : {}\n\tDiscord-Name : {}#{}\n\tGame: {}\n\tRank: {}\n\t```"
+            , &summoner_name, msg.author.name, msg.author.discriminator, game.to_string(), ranked_info.tier)
 }
 
 command!(ping(_ctx, message, _args) {
