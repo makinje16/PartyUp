@@ -58,7 +58,8 @@ pub fn main() {
             .configure(|c| c.prefix("!")) // set the bot's prefix to "~"
             .cmd("commands", commands)
             .cmd("lfg", lfg)
-            .cmd("find", find),
+            .cmd("find", find)
+            .cmd("remove", remove),
     );
 
     // start listening for events by starting a single shard
@@ -100,6 +101,19 @@ command!(lfg(_ctx, message, _args) {
     message.reply(&reply_msg)?;
 });
 
+command!(find(_ctx, message, _args) {
+    let rank = _args.single::<String>().unwrap();
+    let rank = rank.to_uppercase();
+    let player_list = lfgdb_interface::get_players(rank);
+    let reply = construct_get_reply(player_list.players);
+    message.reply(&reply)?;
+});
+
+command!(remove(_ctx, message, _args) {
+    lfgdb_interface::remove_player(&message.author.name, &message.author.discriminator);
+    message.reply("I removed you from the database.")?;
+});
+
 fn construct_lfg_reply(
     summoner_name: &String,
     ranked_info: &league_api::RankedQueue,
@@ -119,11 +133,3 @@ fn construct_get_reply(player_list: Vec<lfgdb_interface::Player>) -> String {
     reply.push_str("```");
     reply
 }
-
-command!(find(_ctx, message, _args) {
-    let rank = _args.single::<String>().unwrap();
-    let rank = rank.to_uppercase();
-    let player_list = lfgdb_interface::get_players(rank);
-    let reply = construct_get_reply(player_list.players);
-    message.reply(&reply)?;
-});

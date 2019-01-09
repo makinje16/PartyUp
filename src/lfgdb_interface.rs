@@ -34,8 +34,8 @@ pub fn insert_player(
     reqwest::get(&endpoint).unwrap()
 }
 
-pub fn remove_player(discord_name: String) -> Response {
-    let endpoint = format!("{}/{}", DELETE_BASE, discord_name);
+pub fn remove_player(discord_name: &String, discriminator : &u16) -> Response {
+    let endpoint = format!("{}/{}%23{}", DELETE_BASE, discord_name, discriminator);
     reqwest::get(&endpoint).unwrap()
 }
 
