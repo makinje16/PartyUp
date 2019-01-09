@@ -11,9 +11,9 @@ use serenity::{
     prelude::*,
 };
 use std::env;
-use reqwest;
 
 pub mod league_api;
+pub mod lfgdb_interface;
 
 struct Handler;
 
@@ -94,11 +94,18 @@ command!(lfg(_ctx, message, _args) {
         }
     }
 
-    let reply_msg = construct_lfg_reply(summoner_name, &ranked_info[index], &message, game);
+    let reply_msg = construct_lfg_reply(&summoner_name, &ranked_info[index], &message, game);
+    lfgdb_interface::insert_player(summoner_name, &message.author.name, &message.author.discriminator,
+                                    &ranked_info[index].tier);
     message.reply(&reply_msg)?;
 });
 
-fn construct_lfg_reply(summoner_name: String, ranked_info: &league_api::RankedQueue, msg: &Message, game: Game) -> String {
+fn construct_lfg_reply(
+    summoner_name: &String,
+    ranked_info: &league_api::RankedQueue,
+    msg: &Message,
+    game: Game,
+) -> String {
     format!("```This is the info being added to the database:\n\tSummoner-Name : {}\n\tDiscord-Name : {}#{}\n\tGame: {}\n\tRank: {}\n\t```"
             , &summoner_name, msg.author.name, msg.author.discriminator, game.to_string(), ranked_info.tier)
 }
