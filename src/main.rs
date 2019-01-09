@@ -58,7 +58,7 @@ pub fn main() {
             .configure(|c| c.prefix("!")) // set the bot's prefix to "~"
             .cmd("commands", commands)
             .cmd("lfg", lfg)
-            .cmd("ping", ping),
+            .cmd("find", find),
     );
 
     // start listening for events by starting a single shard
@@ -110,15 +110,20 @@ fn construct_lfg_reply(
             , &summoner_name, msg.author.name, msg.author.discriminator, game.to_string(), ranked_info.tier)
 }
 
-command!(ping(_ctx, message, _args) {
-//    let client = redis::Client::open("redis-17469.c14.us-east-1-3.ec2.cloud.redislabs.com:17469");
-//    let con = client.get_connection().unwrap();
-//    let _ : () = con.set("my_key", 42)?;
-//    match con.get("my_key") {
-//        Ok(v) => {
-//            let val : u32 = v;
-//            println!("worked");
-//            },
-//        Err(why) => println!("Error: {}", why),
-//    }
+fn construct_get_reply(player_list: Vec<lfgdb_interface::Player>) -> String {
+    let mut reply = String::from("```These are the players looking for a game:\n");
+    for i in 0..player_list.len() {
+        let insertion = format!("\tSummoner-name : {}\n\tDiscord-Name : {}\n------------\n", player_list[i].username, player_list[i].discord_name);
+        reply.push_str(&insertion);
+    }
+    reply.push_str("```");
+    reply
+}
+
+command!(find(_ctx, message, _args) {
+    let rank = _args.single::<String>().unwrap();
+    let rank = rank.to_uppercase();
+    let player_list = lfgdb_interface::get_players(rank);
+    let reply = construct_get_reply(player_list.players);
+    message.reply(&reply)?;
 });
