@@ -6,6 +6,7 @@ use serde_json;
 const INSERT_BASE: &'static str = "http://35.237.240.242/insert";
 const DELETE_BASE: &'static str = "http://35.237.240.242/delete";
 const GET_BASE: &'static str = "http://35.237.240.242/get";
+const GET_BY_ID: &'static str = "http://35.237.240.242/get/id";
 
 #[derive(Serialize, Deserialize)]
 pub struct PlayerList {
@@ -14,21 +15,23 @@ pub struct PlayerList {
 
 #[derive(Serialize, Deserialize)]
 pub struct Player {
-    pub id : i64,
+    pub id : i32,
     pub username : String,
     pub discord_name : String,
     pub rank : String,
+    pub discord_id : String,
 }
 
 pub fn insert_player(
     username: String,
     discord_name: &String,
     discriminator: &u16,
+    discord_id: &String,
     rank: &String,
 ) -> Response {
     let endpoint = format!(
-        "{}/{}/{}%23{}/{}",
-        INSERT_BASE, username, discord_name, discriminator, rank
+        "{}/{}/{}%23{}/{}/{}",
+        INSERT_BASE, username, discord_name, discriminator, discord_id, rank
     );
     reqwest::get(&endpoint).unwrap()
 }
@@ -43,4 +46,11 @@ pub fn get_players(rank: String) -> PlayerList {
     let response = reqwest::get(&endpoint).unwrap().text().unwrap();
     let player_list: PlayerList = serde_json::from_str(&response).unwrap();
     player_list
+}
+
+pub fn find_by_id(id: String) -> PlayerList {
+    let endpoint = format!("{}/{}",GET_BY_ID, id);
+    let response = reqwest::get(&endpoint).unwrap().text().unwrap();
+    let player: PlayerList = serde_json::from_str(&response).unwrap();
+    player
 }
