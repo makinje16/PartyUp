@@ -75,7 +75,7 @@ pub fn main() {
 }
 
 command!(commands(_ctx, message, _args) {
-    let mut response = String::from("\n!lfg lol <summoner name>\n!lfg dota2 <summoner name>\n!lfg wow <summoner name>\n!find <rank>\n");
+    let mut response = String::from("**Here's a list of commands:**\n\t**!lfg lol <summoner name>**\n\t**!find <rank>**\n\t**!invite <db_id> <voice-channel-name>**\n\t**!remove**\n\t**!commands**");
     let _ = message.reply(&response);
 });
 
@@ -115,7 +115,7 @@ command!(find(_ctx, message, _args) {
     let rank = rank.to_uppercase();
     let player_list = lfgdb_interface::get_players(rank);
     let reply = construct_get_reply(player_list.players);
-    let reply = format!("{}\n To invite a player to your server run: ```!invite <Id> <voice cannel name>```", reply);
+    let reply = format!("{}\n **To invite a player to your server run:** ```!invite <Id> <voice channel name>```", reply);
     message.reply(&reply)?;
 });
 
@@ -131,7 +131,6 @@ command!(invite(_ctx, message, _args) {
     while !_args.is_empty() {
         channel_name = format!("{} {}", channel_name, _args.single::<String>().unwrap());
     }
-    println!("db_id");
     let mut id: Option<ChannelId> = None;
     for (channel_id, guild_channel) in guild_id {
         if guild_channel.kind == ChannelType::Voice && guild_channel.name == channel_name {
@@ -148,14 +147,14 @@ command!(invite(_ctx, message, _args) {
                 let recipient_user: User = get_user(invited_player.players[0].discord_id.parse::<u64>().unwrap()).unwrap();
                 let recipient_msg = format!("Hey {} {}#{} want's to invite you to their server to play a game! {}",
                  recipient_user.name, message.author.name, message.author.discriminator, invite_link.url());
-                let reply_str = format!("Sending this {} to {}#{}", invite_link.url(), recipient_user.name, recipient_user.discriminator);
+                let reply_str = format!(":ballot_box_with_check:Sending this {} to {}#{}", invite_link.url(), recipient_user.name, recipient_user.discriminator);
                 recipient_user.direct_message(|m| m
                     .content(recipient_msg)
                     .tts(true))?;
                 message.reply(&reply_str)?;
             }
         },
-        None => {message.reply("I couldn't find the voice channel you searched for. Can you make sure it is spelled correctly and exists?")?;},
+        None => {message.reply(":regional_indicator_x: \nI couldn't find the voice channel you searched for. Can you make sure it is spelled correctly and exists?")?;},
     }
 });
 
