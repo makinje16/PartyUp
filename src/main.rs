@@ -94,16 +94,19 @@ command!(lfg(_ctx, message, _args) {
                     };
     let client = league_api::new_client(api_key);
     let ranked_info = client.get_ranked_info(&summoner_name);
-    let mut index = 0;
+    let mut rank: Option<String> = None;
     for i in 0..ranked_info.len() {
         if ranked_info[i].queue_type == "RANKED_SOLO_5x5" {
-            index = i;
+            rank = Some(ranked_info[i].tier.clone());
         }
     }
-
-    let reply_msg = construct_lfg_reply(&summoner_name, &ranked_info[index], &message, game);
+    if rank == None {
+        rank = Some("UNRANKED".to_string());
+    }
+    let rank = rank.unwrap();
+    let reply_msg = construct_lfg_reply(&summoner_name, &rank, &message, game);
     lfgdb_interface::insert_player(summoner_name, &message.author.name, &message.author.discriminator,
-                                    &message.author.id.to_string(), &ranked_info[index].tier);
+                                    &message.author.id.to_string(), &rank);
     message.reply(&reply_msg)?;
 });
 
@@ -158,12 +161,12 @@ command!(invite(_ctx, message, _args) {
 
 fn construct_lfg_reply(
     summoner_name: &String,
-    ranked_info: &league_api::RankedQueue,
+    rank: &String,
     msg: &Message,
     game: Game,
 ) -> String {
     format!(":video_game::ballot_box_with_check:```css\nThis is the info being added to the database:\n\tSummoner-Name : {}\n\tDiscord-Name : {}#{}\n\tDiscord-Id : {}\n\tGame : {}\n\tRank : {}\n\t```"
-            , &summoner_name, msg.author.name, msg.author.discriminator, msg.author.id, game.to_string(), ranked_info.tier)
+            , &summoner_name, msg.author.name, msg.author.discriminator, msg.author.id, game.to_string(), rank)
 }
 
 fn construct_get_reply(player_list: Vec<lfgdb_interface::Player>) -> String {
