@@ -6,6 +6,9 @@ extern crate serde_derive;
 use serenity::client::{Client, EventHandler};
 
 use serenity::framework::standard::StandardFramework;
+use serenity::model;
+use serenity::model::channel::ChannelType;
+use serenity::model::id::ChannelId;
 use serenity::{
     model::{channel::Message, gateway::Ready},
     prelude::*,
@@ -59,7 +62,8 @@ pub fn main() {
             .cmd("commands", commands)
             .cmd("lfg", lfg)
             .cmd("find", find)
-            .cmd("remove", remove),
+            .cmd("remove", remove)
+            .cmd("invite", invite),
     );
 
     // start listening for events by starting a single shard
@@ -69,7 +73,7 @@ pub fn main() {
 }
 
 command!(commands(_ctx, message, _args) {
-    let mut response = String::from("\n!lfg lol\n!lfg dota2\n!lfg wow");
+    let mut response = String::from("\n!lfg lol <summoner name>\n!lfg dota2 <summoner name>\n!lfg wow <summoner name>\n!find <rank>\n");
     let _ = message.reply(&response);
 });
 
@@ -106,6 +110,7 @@ command!(find(_ctx, message, _args) {
     let rank = rank.to_uppercase();
     let player_list = lfgdb_interface::get_players(rank);
     let reply = construct_get_reply(player_list.players);
+    let reply = format!("{}\n To invite a player to your server run: ```!invite <Id>```", reply);
     message.reply(&reply)?;
 });
 
@@ -114,22 +119,46 @@ command!(remove(_ctx, message, _args) {
     message.reply("I removed you from the database.")?;
 });
 
+command!(invite(_ctx, message, _args) {
+    let guild_id = message.guild_id.unwrap().channels().unwrap();
+    // let usr_id = _args.single::<String>().unwrap();
+    let mut channel_name = _args.single::<String>().unwrap();
+    while !_args.is_empty() {
+        channel_name = format!("{} {}", channel_name, _args.single::<String>().unwrap());
+    }
+    let mut id: Option<ChannelId> = None;
+    for (channel_id, guild_channel) in guild_id {
+        if guild_channel.kind == ChannelType::Voice && guild_channel.name == channel_name {
+            id = Some(channel_id);
+        }
+    }
+    match id {
+        Some(channel_id) => {
+            let invite_link = model::invite::Invite::create(channel_id, |i| i.max_age(3600))?;
+            message.reply(&invite_link.url())?;
+        },
+        None => {message.reply("I couldn't find the voice channel you searched for. Can you make sure it is spelled correctly and exists?")?;},
+    }
+});
+
 fn construct_lfg_reply(
     summoner_name: &String,
     ranked_info: &league_api::RankedQueue,
     msg: &Message,
     game: Game,
 ) -> String {
-    format!("```This is the info being added to the database:\n\tSummoner-Name : {}\n\tDiscord-Name : {}#{}\n\tGame: {}\n\tRank: {}\n\t```"
+    format!(":video_game::ballot_box_with_check:```css\nThis is the info being added to the database:\n\tSummoner-Name : {}\n\tDiscord-Name : {}#{}\n\tGame : {}\n\tRank : {}\n\t```"
             , &summoner_name, msg.author.name, msg.author.discriminator, game.to_string(), ranked_info.tier)
 }
 
 fn construct_get_reply(player_list: Vec<lfgdb_interface::Player>) -> String {
-    let mut reply = String::from("```These are the players looking for a game:\n");
+    let mut reply = String::from(
+        ":video_game::ballot_box_with_check:```css\nThese are the players looking for a game:\n",
+    );
     for i in 0..player_list.len() {
-        let insertion = format!("\tSummoner-name : {}\n\tDiscord-Name : {}\n------------\n", player_list[i].username, player_list[i].discord_name);
+        let insertion = format!("\tSummoner-name : {}\n\tDiscord-Name : {}\n\tId : {}\n------------------------------------\n", player_list[i].username, player_list[i].discord_name, player_list[i].id);
         reply.push_str(&insertion);
     }
-    reply.push_str("```");
+    reply.push_str("\n```");
     reply
 }

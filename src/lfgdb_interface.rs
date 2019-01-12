@@ -14,7 +14,7 @@ pub struct PlayerList {
 
 #[derive(Serialize, Deserialize)]
 pub struct Player {
-    id : i64,
+    pub id : i64,
     pub username : String,
     pub discord_name : String,
     pub rank : String,
@@ -30,7 +30,6 @@ pub fn insert_player(
         "{}/{}/{}%23{}/{}",
         INSERT_BASE, username, discord_name, discriminator, rank
     );
-    println!("endpoint: {}", endpoint);
     reqwest::get(&endpoint).unwrap()
 }
 
@@ -42,7 +41,6 @@ pub fn remove_player(discord_name: &String, discriminator : &u16) -> Response {
 pub fn get_players(rank: String) -> PlayerList {
     let endpoint = format!("{}/{}", GET_BASE, rank);
     let response = reqwest::get(&endpoint).unwrap().text().unwrap();
-    println!("Response: {}", response);
     let player_list: PlayerList = serde_json::from_str(&response).unwrap();
     player_list
 }
