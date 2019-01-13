@@ -87,7 +87,10 @@ command!(lfg(_ctx, message, _args) {
                             return Ok(())
                         }
                 };
-    let summoner_name = _args.single::<String>().unwrap();
+    let mut summoner_name = _args.single::<String>().unwrap();
+    while !_args.is_empty() {
+        summoner_name = format!("{} {}", summoner_name, _args.single::<String>().unwrap());
+    }
     let api_key = match env::var("RIOT_API_KEY") {
                         Ok(key) => key,
                         Err(e) => panic!(e),
