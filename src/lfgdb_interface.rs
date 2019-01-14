@@ -48,9 +48,9 @@ pub fn get_players(rank: String) -> PlayerList {
     player_list
 }
 
-pub fn find_by_id(id: String) -> PlayerList {
+pub fn find_by_id(id: String) -> Option<PlayerList> {
     let endpoint = format!("{}/{}",GET_BY_ID, id);
     let response = reqwest::get(&endpoint).unwrap().text().unwrap();
     let player: PlayerList = serde_json::from_str(&response).unwrap();
-    player
+    if player.players.len() != 0 { return Some(player) } else {return None}
 }
