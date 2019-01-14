@@ -177,11 +177,19 @@ command!(invite(_ctx, message, _args) {
     }
 });
 
+///construct_lfg_reply()
+///Parameters: summoner_name: &String, rank: &String, msg: &Message, game: Game
+///Purpose: to construct a reply so the user can see the info being added to the database
+///Returns: the reply as a String
 fn construct_lfg_reply(summoner_name: &String, rank: &String, msg: &Message, game: Game) -> String {
     format!(":video_game::ballot_box_with_check:```css\nThis is the info being added to the database:\n\tSummoner-Name : {}\n\tDiscord-Name : {}#{}\n\tDiscord-Id : {}\n\tGame : {}\n\tRank : {}\n\t```"
             , &summoner_name, msg.author.name, msg.author.discriminator, msg.author.id, game.to_string(), rank)
 }
 
+///get_channel_name()
+///Parameters: args: &mut Args
+///Purpose: Attempts to get the name of the voice channel the user wants to send an invite link to
+///Returns: Option String of the last arguments the user passes in
 fn get_channel_name(args: &mut Args) -> Option<String> {
     let mut channel_name: String = String::from("");
     while !args.is_empty() {
@@ -203,9 +211,13 @@ fn get_channel_name(args: &mut Args) -> Option<String> {
     Some(channel_name)
 }
 
+///get_channel_id()
+///Parameters: guild_id: HashMap<ChannelId, GuildChannel>, channel_name: String
+///Purpose: Attempt to find the ChannelID given the name of the channel and it's a voice channel
+///Returns: Option of the ChannelId
 fn get_channel_id(
     guild_id: HashMap<ChannelId, GuildChannel>,
-    channel_name: String,
+    channel_name: String
 ) -> Option<ChannelId> {
     for (channel_id, guild_channel) in guild_id {
         if guild_channel.kind == ChannelType::Voice && guild_channel.name == channel_name {
@@ -215,6 +227,10 @@ fn get_channel_id(
     None
 }
 
+///construct_get_reply()
+///Parameters: player_list: Vec<lfgdb_interface::Player>
+///Purpose: To construct a reply for the user telling them players looking for a game
+///Returns: The reply string for the user
 fn construct_get_reply(player_list: Vec<lfgdb_interface::Player>) -> String {
     let mut reply = String::from(
         ":video_game::ballot_box_with_check:```css\nThese are the players looking for a game:\n",
